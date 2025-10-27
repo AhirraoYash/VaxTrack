@@ -1,18 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-
-// A sub-schema for the staff array
-const staffSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  pin: { // Staff member's personal PIN for this camp
-    type: String,
-    required: true,
-  },
-});
+// const bcrypt = require('bcryptjs'); // <-- REMOVED
 
 const campSchema = new mongoose.Schema({
   name: {
@@ -24,13 +11,13 @@ const campSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  location: { // GeoJSON for map integration
+  location: { 
     type: {
       type: String,
       enum: ['Point'],
       default: 'Point',
     },
-    coordinates: { // Format: [longitude, latitude]
+    coordinates: {
       type: [Number],
       required: true,
     },
@@ -55,8 +42,23 @@ const campSchema = new mongoose.Schema({
   campAccessCode: {
     type: String,
     required: true,
+    unique: true,
   },
-  staff: [staffSchema],
+  
+  // This is the ONE common PIN, stored as plain text
+  staffPin: { 
+    type: String,
+    required: true,
+  },
+
+  // This is just a list of staff identifiers (e.g., their email or a name)
+  staff: [
+    {
+      type: String,
+      trim: true,
+    }
+  ],
+
   vaccineInventory: [{
     vaccine: {
       type: mongoose.Schema.Types.ObjectId,
@@ -73,18 +75,9 @@ const campSchema = new mongoose.Schema({
 // Index for efficient map-based searches
 campSchema.index({ location: '2dsphere' });
 
-// Mongoose hook to hash the staff PINs before saving
-campSchema.pre('save', async function(next) {
-  if (!this.isModified('staff')) return next();
-  
-  const promises = this.staff.map(async (staffMember) => {
-    if (staffMember.isModified('pin')) {
-      staffMember.pin = await bcrypt.hash(staffMember.pin, 10);
-    }
-  });
-  await Promise.all(promises);
-  next();
-});
+// --- HOOKS AND METHODS REMOVED ---
+// campSchema.pre('save', ...); // <-- REMOVED
+// campSchema.methods.matchStaffPin = ...; // <-- REMOVED
 
 const Camp = mongoose.model('Camp', campSchema);
 module.exports = Camp;

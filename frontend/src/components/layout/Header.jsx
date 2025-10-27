@@ -12,15 +12,22 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center p-4">
         <Link to="/" className="text-2xl font-bold tracking-tight">
           VaxTrack 💉
+          {user && <span className="text-white">{user.role} !</span>}
         </Link>
         <nav className="flex items-center space-x-6">
           <NavLink to="/camps" className="hover:text-blue-200">
             Find Camps
           </NavLink>
+          {/* create create camp button for organizer */}
+          {user && user.role === 'organizer' && (
+            <NavLink to="/create-camp" className="hover:text-blue-200">
+              Create Camp
+            </NavLink>
+          )}
           {isAuthenticated ? (
             <>
-              <NavLink to="/dashboard" className="hover:text-blue-200">
-                My Dashboard
+              <NavLink to="/my-camps" className="hover:text-blue-200">
+                My Camps
               </NavLink>
               <span className="font-semibold">Welcome, {user.name}!</span>
               <button
@@ -46,6 +53,18 @@ const Header = () => {
               </NavLink>
             </div>
           )}
+          {user && user.role === 'organizer' && (
+            <NavLink to="/organizer-profile" className="hover:text-blue-200">
+              Profile
+            </NavLink>
+          )}
+          {
+            user && user.role === 'beneficiary' && (
+              <NavLink to="/beneficiary-profile" className="hover:text-blue-200">
+                Profile
+              </NavLink>
+            )
+          }
         </nav>
       </div>
     </header>

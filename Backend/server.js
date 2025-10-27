@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const campRoutes = require('./routes/campRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const vaccineRoutes = require('./routes/vaccineRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/camps', campRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/vaccines', vaccineRoutes);
 
 
 const PORT = process.env.PORT || 5000;
