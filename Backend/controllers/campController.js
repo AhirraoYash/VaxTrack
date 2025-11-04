@@ -223,6 +223,7 @@ const addStaffToCamp = async (req, res) => {
 //get specific camps by user id with user all information   
 const getCampsByUserId = async (req, res) => {
     try {
+        console.log(req.user._id);
         const camps = await Camp.find({ organizedBy: req.user._id });
         const user = await User.findById(req.user._id);
         res.json({ camps, user });
@@ -246,6 +247,18 @@ const getStaffByCampId = async (req, res) => {
         }
     };
 
+//get camp detial by camp id with all detail like participants, staff and camp detail participant(user data user model)fetch using appointment model
+const getCampDetailByCampId = async (req, res) => {
+    try {
+        const camp = await Camp.findById(req.params.id);
+        const appointments = await Appointment.find({ camp: req.params.id });
+        const user = await User.find({ _id: { $in: appointments.map(p => p.beneficiary) } });
+            res.json({ camp, participants: user.data });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error: ' + error.message });
+    }
+};
+
 // --- UPDATE YOUR EXPORTS ---
 module.exports = {
     createCamp,
@@ -257,4 +270,5 @@ module.exports = {
     addStaffToCamp, // <-- ADD THIS
     getCampsByUserId, // <-- ADD THIS
     getStaffByCampId, // <-- ADD THIS
+    getCampDetailByCampId, // <-- ADD THIS
 };

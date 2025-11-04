@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import campService from '../api/campService'; // Make sure this path is correct
-// --- CORRECTED ICON IMPORT ---
+import campService from '../api/campService'; 
 import { ClockIcon, MapPinIcon, UsersIcon } from '@heroicons/react/20/solid';
 
 function MyCampsPage() {
@@ -15,7 +14,7 @@ function MyCampsPage() {
       try {
         setLoading(true);
         // Assuming your service is named getMyCampsAndUser
-        const response = await campService.getCampsByUserId(); 
+        const response = await campService.getMyCamps(); 
         setCamps(response.camps);
         setUser(response.user);
       } catch (err) {
@@ -103,7 +102,7 @@ function CampCard({ camp }) {
         </div>
       </div>
       <Link
-        to={`/camp/${camp._id}`}
+        to={`/manage-camp/${camp._id}`}
         className="block w-full text-center p-4 bg-gray-50 hover:bg-gray-100 text-blue-600 font-medium"
       >
         Manage Camp
@@ -111,5 +110,4 @@ function CampCard({ camp }) {
     </div>
   );
 }
-
 export default MyCampsPage;

@@ -14,8 +14,11 @@ import CampDetailsPage from '../pages/CampDetailsPage';
 import MyDashboardPage from '../pages/MyDashboardPage';
 import CreateCamp from '../pages/CreateCamp';
 import MyCampsPage from '../pages/MyCampsPage';
+import CampDetailPage from '../pages/CampDetailPage';
+import StaffLoginPage from '../pages/staffPages/StaffLoginPage';
 // ... import other pages like AdminDashboard, OrganizerDashboard etc.
-
+import MyBookingsPage from '../pages/MyBookingsPage';
+import ManageCampPage from '../pages/ManageCampPage';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -25,6 +28,8 @@ const AppRoutes = () => {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/camps" element={<FindCampsPage />} />
       <Route path="/camps/:id" element={<CampDetailsPage />} />
+      <Route path="/staff-login" element={<StaffLoginPage />} />
+      <Route path="/my-booking" element={<MyBookingsPage />} />
       
       {/* --- Protected Routes (Beneficiary) --- */}
       <Route
@@ -47,6 +52,19 @@ const AppRoutes = () => {
       <MyCampsPage />
     </ProtectedRoute>
   } />  
+
+  <Route path="/camp-details/:id"  
+  element={
+    <ProtectedRoute>
+      <CampDetailPage />
+    </ProtectedRoute>
+  }
+  />
+  <Route path="/manage-camp/:id" element={
+    <ProtectedRoute>
+      <ManageCampPage />
+    </ProtectedRoute>
+  } />
       {/* Add more protected routes for Organizers, Vaccinators, and Admins here */}
       {/* Example for an Admin route */}
       {/*

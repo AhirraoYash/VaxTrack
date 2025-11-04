@@ -10,6 +10,7 @@ const {
     staffLogin,       // <-- 1. IMPORTED
     addStaffToCamp,   // <-- 2. IMPORTED
     getStaffByCampId, // <-- 3. IMPORTED
+    getCampDetailByCampId, // <-- 4. IMPORTED
 } = require('../controllers/campController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -25,6 +26,7 @@ router.post('/staff-login', staffLogin); // <-- 3. ADDED THIS ROUTE
 
 // Get specific camps for the logged-in user
 // THIS MUST BE DEFINED *BEFORE* /:id
+//passing the user id to the controller
 router.get('/mycamps', protect, getCampsByUserId); // <-- 4. MOVED & RENAMED (was /user)
 // Get staff by camp id
 router.get('/:id/staff', protect, getStaffByCampId);
@@ -41,6 +43,9 @@ router.delete('/:id', protect, deleteCamp);
 
 // Add a staff member to a camp (requires login)
 router.put('/:id/addstaff', protect, addStaffToCamp); // <-- 5. ADDED THIS ROUTE
+
+// Get camp detail by camp id (requires login)
+router.get('/:id/detail', protect, getCampDetailByCampId); // <-- 6. ADDED THIS ROUTE
 
 // === OTHER PROTECTED ROUTES ===
 

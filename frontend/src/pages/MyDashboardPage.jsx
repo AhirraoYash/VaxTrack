@@ -44,7 +44,7 @@ const MyDashboardPage = () => {
                 <div key={app._id} className="border p-4 rounded-lg flex justify-between items-center">
                   <div>
                     <p className="font-bold">{app.camp?.name || 'Camp details unavailable'}</p>
-                    <p className="text-sm text-gray-600">Vaccine: {app.vaccine?.name || 'N/A'}</p>
+ 
                     <p className="text-sm text-gray-600">Date: {new Date(app.slotDate).toLocaleString()}</p>
                   </div>
                   <span className={`px-3 py-1 text-sm font-semibold rounded-full ${

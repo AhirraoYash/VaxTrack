@@ -20,9 +20,9 @@ const bookAppointment = async (req, res) => {
             (item) => item.vaccine.toString() === vaccine && item.quantity > 0
         );
 
-        if (!vaccineInStock) {
-            return res.status(400).json({ message: 'Vaccine not available at this camp' });
-        }
+        // if (!vaccineInStock) {
+        //     return res.status(400).json({ message: 'Vaccine not available at this camp' });
+        // }
 
         const appointment = new Appointment({
             beneficiary: req.user._id,
@@ -30,12 +30,10 @@ const bookAppointment = async (req, res) => {
             vaccine,
             slotDate,
         });
-
+        console.log("appointment", appointment);
         const createdAppointment = await appointment.save();
 
-        // Decrement vaccine inventory
-        vaccineInStock.quantity -= 1;
-        await campExists.save();
+         
 
         res.status(201).json(createdAppointment);
 

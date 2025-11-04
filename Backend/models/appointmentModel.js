@@ -14,7 +14,6 @@ const appointmentSchema = new mongoose.Schema({
   vaccine: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Vaccine',
-    required: true,
   },
   slotDate: {
     type: Date,
@@ -25,6 +24,10 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['scheduled', 'completed', 'cancelled', 'noShow'],
     default: 'scheduled',
   },
+  remark: {
+    type: String,
+    trim: true,
+  }
 }, { timestamps: true });
 
 const Appointment = mongoose.model('Appointment', appointmentSchema);

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import campService from '../api/campService'; // Make sure this path is correct
-import DeleteCampModal from '../components/DeleteCampModal'; // Make sure this path is correct
-// --- CORRECTED ICON IMPORTS (v2 syntax) ---
+import campService from '../api/campService';
+import DeleteCampModal from '../components/DeleteCampModal'; 
 import { ExclamationTriangleIcon, UsersIcon, UserGroupIcon, DocumentTextIcon } from '@heroicons/react/20/solid';
 
 const TABS = [
@@ -31,6 +30,8 @@ function CampDetailPage() {
         setError(null);
         
         const campRes = await campService.getCampById(campId);
+        console.log("Camp by id");
+        console.log(campRes);
         setCamp(campRes.data);
 
         // This uses your MOCKED data function from the service

@@ -32,14 +32,15 @@ const getCampById = async (campId) => {
  * @route   GET /api/camps/mycamps
  */
 const getMyCamps = async () => {
-  const response = await api.get('/camps/mycamps'); 
+  const response = await api.get(`/camps/mycamps`); 
   return response.data;
 };
 
 /**
  * @desc    Delete a camp by its ID (Protected)
  * @route   DELETE /api/camps/:id
- */
+ */ 
+
 const deleteCamp = async (campId) => {
   const response = await api.delete(`/camps/${campId}`);
   return response.data;
@@ -85,6 +86,10 @@ const getCampStaff = async (campId) => {
   return response.data;
 };
 
+const getCampDetailByCampId = async (campId) => {
+  const response = await api.get(`/camps/${campId}/detail`);
+  return response.data;
+};
 
 // --- EXPORT ALL FUNCTIONS ---
 const campService = {
@@ -97,6 +102,7 @@ const campService = {
   staffLogin,
   addStaffToCamp,
   getCampStaff, // <-- Your new function
+  getCampDetailByCampId, // <-- Your new function
 };
 
 export default campService;

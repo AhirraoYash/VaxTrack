@@ -76,6 +76,13 @@ const LoginPage = () => {
             Register here
           </Link>
         </p>
+
+        <p className="text-center mt-4">
+          Are you a camp staff member?{' '}
+          <Link to="/staff-login" className="text-blue-600 hover:underline">
+            Staff Login
+          </Link>
+        </p> 
       </form>
     </div>
   );

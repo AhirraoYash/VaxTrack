@@ -24,11 +24,20 @@ const Header = () => {
               Create Camp
             </NavLink>
           )}
+          {/*show only organizer not benefier*/}
+          {user && user.role === 'organizer' && (
+          <NavLink to="/my-camps" className="hover:text-blue-200">
+                My Camps
+              </NavLink>)}
+
+          {user  && (
+            <NavLink to="/dashboard"  className="hover:text-blue-200">
+              My booking
+            </NavLink>
+          )}
           {isAuthenticated ? (
             <>
-              <NavLink to="/my-camps" className="hover:text-blue-200">
-                My Camps
-              </NavLink>
+              
               <span className="font-semibold">Welcome, {user.name}!</span>
               <button
                 onClick={logout}
