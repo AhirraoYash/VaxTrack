@@ -13,6 +13,8 @@ const campRoutes = require('./routes/campRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const vaccineRoutes = require('./routes/vaccineRoutes');
 
+const chatRoutes = require('./routes/chatRoutes');
+
 const app = express();
 
 // Middlewares
@@ -25,6 +27,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/camps', campRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/vaccines', vaccineRoutes);
+
+
+app.use('/api/chat', chatRoutes);
 
 
 const PORT = process.env.PORT || 5000;
