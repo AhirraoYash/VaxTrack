@@ -1,10 +1,9 @@
-// src/pages/FindCampsPage.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // --- NEW: Added useMemo ---
 import useCamps from '../hooks/useCamps';
 import campService from '../api/campService';
 import appointmentService from '../api/appointmentService';
-import { useAuth } from '../context/AuthContext'; // --- NEW --- Import useAuth
+import { useAuth } from '../context/AuthContext';
+import { Search } from 'lucide-react'; // --- NEW: Icon for search bar ---
 
 // --- Modal Component (No Change) ---
 const Modal = ({ children, onClose }) => (
@@ -29,13 +28,10 @@ const Modal = ({ children, onClose }) => (
   </div>
 );
 
-// --- REMOVED BookingForm component ---
-
-
 // --- Main FindCampsPage Component ---
 const FindCampsPage = () => {
   const { camps, loading: loadingList, error: listError } = useCamps();
-  const { user } = useAuth(); // --- NEW --- Get the logged-in user
+  const { user } = useAuth();
   
   // State for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,18 +46,18 @@ const FindCampsPage = () => {
   
   // State for booked camps
   const [bookedCampIds, setBookedCampIds] = useState(new Set());
-  const [loadingAppointments, setLoadingAppointments] = useState(true); // --- MODIFIED --- Start as true
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
   
+  // --- NEW: State for the search filter ---
+  const [searchQuery, setSearchQuery] = useState('');
+
   
-  // --- MODIFIED ---
-  // Fetch the user's appointments on page load, *if* they are logged in.
+  // --- Fetch user's appointments (No Change) ---
   useEffect(() => {
     const fetchMyAppointments = async () => {
       try {
         const data = await appointmentService.getMyAppointments();
-        // Assuming data.data is an array of appointment objects
         const campIds = new Set(data.map(app => app.camp._id));
-        console.log("campIds", campIds);
         setBookedCampIds(campIds);
       } catch (err) {
         console.error("Failed to fetch user appointments:", err);
@@ -70,16 +66,32 @@ const FindCampsPage = () => {
       }
     };
 
-    // --- NEW --- Only fetch if the user exists
     if (user) {
       fetchMyAppointments();
     } else {
-      // If no user, we're done loading (with an empty list)
       setLoadingAppointments(false); 
     }
-
-  }, [user]); // --- NEW --- This effect depends on the user
+  }, [user]);
   
+  // --- NEW: Memoized filter logic ---
+  // This filters the camps based on the search query
+  const filteredCamps = useMemo(() => {
+    // If camps isn't an array yet, return an empty one
+    if (!Array.isArray(camps)) {
+      return [];
+    }
+    // If no search query, return all camps
+    if (!searchQuery) {
+      return camps;
+    }
+    // Return filtered list
+    return camps.filter(camp =>
+      camp.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [camps, searchQuery]); // Re-run only if camps or searchQuery change
+
+
+  // --- Modal and Booking Handlers (No Change) ---
 
   // When user clicks "View Details"
   const handleViewDetails = async (campId) => {
@@ -108,12 +120,9 @@ const FindCampsPage = () => {
   // Called on successful booking
   const handleBookingSuccess = (message) => {
     setBookingSuccess(message);
-
-    // Add the newly booked camp to our list so the button updates instantly
     if (selectedCamp) {
       setBookedCampIds(prevIds => new Set(prevIds).add(selectedCamp._id));
     }
-
     setTimeout(() => {
       closeModal();
     }, 2000);
@@ -139,17 +148,33 @@ const FindCampsPage = () => {
     }
   };
 
+  // --- Main Render ---
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-8 text-center">Available Vaccination Camps</h1>
       
-      {/* --- CAMP LIST --- */}
-      {/* --- MODIFIED --- Check both loading states */}
+      {/* --- NEW: Search Bar --- */}
+      <div className="mb-8 max-w-2xl mx-auto">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search for camps by name..."
+            className="w-full p-4 pl-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+        </div>
+      </div>
+      
+      {/* --- Loading / Error States --- */}
       {(loadingList || loadingAppointments) && <div className="text-center mt-10">Loading camps...</div>} 
       {listError && <div className="text-center mt-10 text-red-500">{listError}</div>}
       
+      {/* --- CAMP LIST --- */}
+      {/* --- MODIFIED: Map over filteredCamps --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {camps && camps.map((camp) => {
+        {filteredCamps && filteredCamps.map((camp) => {
           // Check if this camp is in the user's booked list
           const isBooked = bookedCampIds.has(camp._id);
 
@@ -170,14 +195,12 @@ const FindCampsPage = () => {
                 </div>
               </div>
 
-              {/* --- Conditional Button Rendering --- */}
+              {/* --- Conditional Button Rendering (No Change) --- */}
               {isBooked ? (
-                // If booked, show a green "Booked" button
                 <div className="w-full bg-green-500 text-white py-3 font-semibold text-center cursor-not-allowed">
                   Already Booked
                 </div>
               ) : (
-                // Otherwise, show the normal button
                 <button 
                   onClick={() => handleViewDetails(camp._id)}
                   className="w-full bg-blue-600 text-white py-3 font-semibold hover:bg-blue-700 transition duration-300"
@@ -189,6 +212,19 @@ const FindCampsPage = () => {
           );
         })}
       </div>
+
+      {/* --- NEW: No Results Message --- */}
+      {!loadingList && filteredCamps.length === 0 && (
+        <div className="text-center mt-16 text-gray-500">
+          <h2 className="text-2xl font-semibold">No Camps Found</h2>
+          {searchQuery ? (
+            <p className="text-lg mt-2">No camps matched your search for: "{searchQuery}"</p>
+          ) : (
+            <p className="text-lg mt-2">There are no active camps at this time. Please check back later.</p>
+          )}
+        </div>
+      )}
+
 
       {/* --- MODAL (No Change) --- */}
       {isModalOpen && (
@@ -257,4 +293,3 @@ const FindCampsPage = () => {
 };
 
 export default FindCampsPage;
-

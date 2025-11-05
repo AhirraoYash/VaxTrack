@@ -1,5 +1,7 @@
 const Camp = require('../models/campModel');
 const User = require('../models/userModel');
+const Appointment = require('../models/appointmentModel');
+const Vaccine = require('../models/vaccineModel');
 /**
  * @desc    Create a new camp
  * @route   POST /api/camps
@@ -150,33 +152,36 @@ const deleteCamp = async (req, res) => {
  */
 const staffLogin = async (req, res) => {
     try {
-        const { campAccessCode, staffIdentifier, pin } = req.body;
+        console.log("route file");
+        console.log(req.body);
+
+        // --- FIX 1: Use the correct keys from req.body ---
+        const { campAccessCode, staffEmail, staffPin } = req.body;
 
         const camp = await Camp.findOne({ campAccessCode });
         if (!camp) {
             return res.status(404).json({ message: 'Camp not found' });
         }
-
-        const now = new Date();
-        if (now < camp.startDate) {
-            return res.status(403).json({ message: 'Camp has not started yet' });
-        }
-        if (now > camp.endDate) {
-            return res.status(403).json({ message: 'Camp has already ended' });
-        }
+        console.log(camp);
+    
         
+        // --- FIX 2: Check against staffEmail, not staffIdentifier ---
         const isStaff = camp.staff.some(
-            member => member.toLowerCase() === staffIdentifier.toLowerCase()
+            member => member.toLowerCase() === staffEmail.toLowerCase()
         );
+        console.log("Is Staff");
+        console.log(isStaff);
 
         if (!isStaff) {
             return res.status(401).json({ message: 'Staff member not registered for this camp' });
         }
 
-        if (camp.staffPin === pin) { 
+        // --- FIX 3: Compare camp.staffPin with staffPin, not pin ---
+        if (camp.staffPin === staffPin) { 
             res.json({
                 message: 'Login successful',
-                staffIdentifier: staffIdentifier,
+                // Send back staffEmail as the identifier
+                staffIdentifier: staffEmail, 
                 campId: camp._id,
                 campName: camp.name,
             });
@@ -247,13 +252,46 @@ const getStaffByCampId = async (req, res) => {
         }
     };
 
-//get camp detial by camp id with all detail like participants, staff and camp detail participant(user data user model)fetch using appointment model
+/**
+ * @desc    Get camp detail by camp id with all details (camp info, staff, and participants)
+ * @route   GET /api/camps/details/:id  <-- (You might need to add this route)
+ * @access  Private/Organizer
+ */
 const getCampDetailByCampId = async (req, res) => {
     try {
-        const camp = await Camp.findById(req.params.id);
-        const appointments = await Appointment.find({ camp: req.params.id });
-        const user = await User.find({ _id: { $in: appointments.map(p => p.beneficiary) } });
-            res.json({ camp, participants: user.data });
+        // --- Step 1: Get the Main Camp Details ---
+        // We will .populate() the organizer's name and email
+        const camp = await Camp.findById(req.params.id)
+            .populate('organizedBy', 'name email');
+
+        if (!camp) {
+            return res.status(404).json({ message: 'Camp not found' });
+        }
+
+        // --- Step 2: Get Staff Details ---
+        // Find all users whose email is in the camp's 'staff' array
+        // We only select the fields we need: name, email, and role
+        const staffDetails = await User.find({ 
+            email: { $in: camp.staff } 
+        }).select('name email role');
+
+        // --- Step 3: Get Participant Details ---
+        // Find all appointments for this camp
+        // We use .populate() to automatically get the user details ('beneficiary')
+        // and the vaccine details for each appointment.
+        const participantAppointments = await Appointment.find({ 
+            camp: req.params.id 
+        })
+        .populate('beneficiary', 'name email uniqueId phoneNumber') // Get user info
+        .populate('vaccine', 'name'); // Get vaccine info
+
+        // --- Step 4: Combine and Send ---
+        res.json({
+            campInfo: camp,
+            staff: staffDetails,
+            participants: participantAppointments,
+        });
+
     } catch (error) {
         res.status(500).json({ message: 'Server Error: ' + error.message });
     }
@@ -266,9 +304,9 @@ module.exports = {
     getCampById,
     updateCamp,
     deleteCamp,
-    staffLogin,     // <-- ADD THIS
-    addStaffToCamp, // <-- ADD THIS
-    getCampsByUserId, // <-- ADD THIS
-    getStaffByCampId, // <-- ADD THIS
-    getCampDetailByCampId, // <-- ADD THIS
+    staffLogin,    
+    addStaffToCamp,
+    getCampsByUserId, 
+    getStaffByCampId, 
+    getCampDetailByCampId,  
 };

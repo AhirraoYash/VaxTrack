@@ -21,7 +21,9 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard'); // Redirect to dashboard on successful login
+      //if user is role is organizer then move to my-camp
+      
+      navigate('/my-booking'); // Redirect to dashboard on successful login
     } catch (err) {
       setError('Failed to log in. Please check your credentials.');
       console.error(err);

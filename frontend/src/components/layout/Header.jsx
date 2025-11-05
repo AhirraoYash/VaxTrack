@@ -12,33 +12,48 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center p-4">
         <Link to="/" className="text-2xl font-bold tracking-tight">
           VaxTrack 💉
-          {user && <span className="text-white">{user.role} !</span>}
+          {/* --- FIX 1: Safely show user role --- */}
+          {user?.role && (
+            <span className="text-sm ml-2 px-2 py-0.5 bg-white/20 rounded-full">
+              {user.role}
+            </span>
+          )}
         </Link>
         <nav className="flex items-center space-x-6">
           <NavLink to="/camps" className="hover:text-blue-200">
             Find Camps
           </NavLink>
-          {/* create create camp button for organizer */}
-          {user && user.role === 'organizer' && (
-            <NavLink to="/create-camp" className="hover:text-blue-200">
-              Create Camp
-            </NavLink>
-          )}
-          {/*show only organizer not benefier*/}
-          {user && user.role === 'organizer' && (
-          <NavLink to="/my-camps" className="hover:text-blue-200">
-                My Camps
-              </NavLink>)}
+          
+          {/* --- FIX 2: Role-based navigation --- */}
 
-          {user  && (
-            <NavLink to="/dashboard"  className="hover:text-blue-200">
-              My booking
+          {/* Organizer Links */}
+          {user && user.role === 'organizer' && (
+            <NavLink to="/my-camps" className="hover:text-blue-200">
+              My Camps
             </NavLink>
           )}
+
+          {/* Beneficiary Links (assuming default role is 'beneficiary') */}
+          {user && (user.role === 'beneficiary' || !user.role) && (
+            <NavLink to="/my-booking" className="hover:text-blue-200">
+              My Bookings
+            </NavLink>
+          )}
+
+          {/* Staff Links */}
+          {user && user.role === 'staff' && (
+            <NavLink to="/staff-dashboard" className="hover:text-blue-200">
+              Staff Dashboard
+            </NavLink>
+          )}
+          
+          
           {isAuthenticated ? (
             <>
-              
-              <span className="font-semibold">Welcome, {user.name}!</span>
+              {/* --- FIX 3: Safe display for user name --- */}
+              <span className="font-semibold">
+                Welcome, {user?.name || user?.email || 'User'}
+              </span>
               <button
                 onClick={logout}
                 className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md font-bold"
@@ -62,18 +77,7 @@ const Header = () => {
               </NavLink>
             </div>
           )}
-          {user && user.role === 'organizer' && (
-            <NavLink to="/organizer-profile" className="hover:text-blue-200">
-              Profile
-            </NavLink>
-          )}
-          {
-            user && user.role === 'beneficiary' && (
-              <NavLink to="/beneficiary-profile" className="hover:text-blue-200">
-                Profile
-              </NavLink>
-            )
-          }
+            
         </nav>
       </div>
     </header>

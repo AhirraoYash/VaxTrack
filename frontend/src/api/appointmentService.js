@@ -22,10 +22,19 @@ const updateAppointmentStatus = async (appointmentId, status) => {
   return response.data;
 };
 
+// --- ADDED ---
+// Delete (cancel) an appointment (Protected)
+const deleteAppointment = async (appointmentId) => {
+  const response = await api.delete(`/appointments/${appointmentId}`);
+  return response.data;
+};
+// --- END ---
+
 const appointmentService = {
   getMyAppointments,
   bookAppointment,
   updateAppointmentStatus,
+  deleteAppointment, // --- ADDED ---
 };
 
 export default appointmentService;

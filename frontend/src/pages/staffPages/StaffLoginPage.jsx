@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import campService from '../../api/campService';
-// We are not using useAuth() here because this is a different login logic
-// You might add a 'staffLogin' function to your AuthContext later
+// We no longer import campService directly
+import { useAuth } from '../../context/AuthContext'; // Import your useAuth hook
 
 const StaffLoginPage = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +15,9 @@ const StaffLoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Get the staffLogin function from your AuthContext
+  const { staffLogin } = useAuth();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -24,28 +26,20 @@ const StaffLoginPage = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
-      // This is the backend API endpoint we discussed
-      const res = await campService.staffLogin(formData);
-     console.log(res);
-
-      
-
-      if (!res.ok) { 
-        throw new Error(data.message || 'Login failed. Please check your details.');
-      }
-
-      // If login is successful:
-      // 1. Save the token (and maybe staff/camp info)
-      localStorage.setItem('staffToken', data.token);
-      localStorage.setItem('staffInfo', JSON.stringify(data.data));
-
+      // --- THIS IS THE CHANGE ---
+      // Call the staffLogin function from the context.
+      // It will handle the API call and localStorage.
+      await staffLogin(formData);
+  
       // 2. Redirect to the staff dashboard
-      navigate('/my-dashboard'); 
+      navigate('/staff-dashboard'); 
       
     } catch (err) {
-      setError(err.message);
+      // The context function will throw an error if login fails
+      const message = err.response?.data?.message || err.message || "Login Failed";
+      setError(message);
       console.error(err);
     } finally {
       setLoading(false);

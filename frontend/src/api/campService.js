@@ -63,6 +63,7 @@ const getCampParticipants = async (campId) => {
  * @route   POST /api/camps/staff-login
  */
 const staffLogin = async (loginData) => {
+  console.log(loginData);
   const response = await api.post('/camps/staff-login', loginData);
   return response.data;
 };
@@ -85,6 +86,8 @@ const getCampStaff = async (campId) => {
   const response = await api.get(`/camps/${campId}/staff`);
   return response.data;
 };
+
+/*all information about camp, stafff, participant*/
 
 const getCampDetailByCampId = async (campId) => {
   const response = await api.get(`/camps/${campId}/detail`);

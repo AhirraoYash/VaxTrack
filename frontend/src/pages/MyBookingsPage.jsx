@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import appointmentService from '../api/appointmentService';
+import appointmentService from '../api/appointmentService'; // Make sure this path is correct
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, XCircle } from 'lucide-react'; // Using icons for a better UI
 
@@ -56,7 +56,11 @@ const MyBookingsPage = () => {
 
     try {
       setCancelError('');
-      await appointmentService.cancelAppointment(selectedAppId);
+
+      // --- THIS IS THE FIX ---
+      // Your service file uses 'deleteAppointment', not 'cancelAppointment'
+      await appointmentService.deleteAppointment(selectedAppId);
+      // --- END OF FIX ---
       
       // If successful, remove the appointment from the list in the UI
       setAppointments(prevAppointments =>
@@ -64,7 +68,10 @@ const MyBookingsPage = () => {
       );
       closeConfirm(); // Close the modal
     } catch (err) {
-      setCancelError('Failed to cancel appointment. Please try again.');
+      // --- IMPROVED ERROR ---
+      // Show the specific error message from the backend
+      const message = err.response?.data?.message || 'Failed to cancel appointment. Please try again.';
+      setCancelError(message);
       console.error(err);
     }
   };
@@ -106,7 +113,7 @@ const MyBookingsPage = () => {
         <div className="text-center text-gray-500 bg-white p-12 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-2">No Bookings Found</h2>
           <p className="text-lg mb-6">You have no upcoming or past appointments.</p>
-          <Link to="/find-camps">
+          <Link to="/camps">
             <button className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold">
               Book a Camp
             </button>
@@ -145,16 +152,29 @@ const MyBookingsPage = () => {
               </div>
               
               {/* Card Footer with Cancel Button */}
-              {app.status === 'scheduled' && (
-                <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 text-right">
+              {/* --- UPDATED: Also allow canceling 'noShow' --- */}
+              {(app.status === 'scheduled' || app.status === 'noShow') && (
+                
+                // --- MODIFIED SECTION ---
+                <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end items-center space-x-3">
+                  
+                  {/* New Download Button */}
+                  <button
+                    className="flex items-center justify-center bg-blue-100 text-blue-700 py-2 px-4 rounded-lg hover:bg-blue-200 transition duration-300 font-semibold text-sm"
+                  >
+                    Download Report
+                  </button>
+
+                  {/* Existing Cancel Button */}
                   <button
                     onClick={() => promptCancel(app._id)}
-                    className="flex items-center justify-center ml-auto bg-red-100 text-red-700 py-2 px-4 rounded-lg hover:bg-red-200 transition duration-300 font-semibold text-sm"
+                    className="flex items-center justify-center bg-red-100 text-red-700 py-2 px-4 rounded-lg hover:bg-red-200 transition duration-300 font-semibold text-sm"
                   >
                     <XCircle size={16} className="mr-2" />
                     Cancel Booking
                   </button>
                 </div>
+                // --- END OF MODIFIED SECTION ---
               )}
             </div>
           ))}

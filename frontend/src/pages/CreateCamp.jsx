@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // --- ADDED: For redirect on submit
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import campService from '../api/campService'; // Assuming you have this file
+import campService from '../api/campService';
 
 // --- NEW IMPORTS for marker icons (THE FIX) ---
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -34,15 +35,32 @@ const initialState = {
 };
 
 function CreateCamp() {
+  const navigate = useNavigate(); // --- ADDED: Hook for navigation
   const [formData, setFormData] = useState(initialState);
   const [staffList, setStaffList] = useState([]);
   const [currentStaffId, setCurrentStaffId] = useState('');
   const [position, setPosition] = useState([18.5204, 73.8567]);
   
-  // --- NEW STATE for API calls ---
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // --- ADDED: Date calculation logic ---
+  const [minStartDate] = useState(() => {
+    const minDate = new Date();
+    // Set to midnight at the start of today
+    minDate.setHours(0, 0, 0, 0);
+    // Add 3 days
+    minDate.setDate(minDate.getDate() + 3);
+
+    // Format to 'YYYY-MM-DDTHH:mm' for datetime-local input
+    const year = minDate.getFullYear();
+    const month = (minDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = minDate.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}T00:00`;
+  });
+  // ------------------------------------
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +89,6 @@ function CreateCamp() {
     setStaffList(prev => prev.filter(id => id !== staffIdToRemove));
   };
 
-  // --- UPDATED handleSubmit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,14 +100,15 @@ function CreateCamp() {
       staff: staffList, 
       location: {
         type: 'Point',
-        coordinates: [position[1], position[0]],
+        coordinates: [position[1], position[0]], // Lng, Lat
       }
     };
 
     try {
-      const response = await campService.createCamp(finalCampData);
+      // Assuming response.data is what you want
+      const response = await campService.createCamp(finalCampData); 
       
-      console.log('Camp created:', response.data);
+      console.log('Camp created:', response); // Use 'response', not 'response.data'
       setSuccess('Camp created successfully!');
       
       // Reset the form
@@ -98,8 +116,12 @@ function CreateCamp() {
       setStaffList([]);
       setPosition([18.5204, 73.8567]); // Reset map
       
+      // Redirect after a short delay
+      setTimeout(() => {
+        navigate('/my-camps'); // Or '/my-camps'
+      }, 1000); 
+      
     } catch (err) {
-      // Set a user-friendly error message
       const message = err.response?.data?.message || 'Failed to create camp. Please try again.';
       console.error('API Error:', err);
       setError(message);
@@ -146,7 +168,6 @@ function CreateCamp() {
             
             <form onSubmit={handleSubmit} className="space-y-5">
               
-              {/* --- NEW: Error/Success Messages --- */}
               {error && (
                 <div className="p-4 rounded-lg bg-red-100 text-red-700">
                   <strong>Error:</strong> {error}
@@ -158,9 +179,7 @@ function CreateCamp() {
                 </div>
               )}
               
-              {/* ... (all your input fields for name, address, dates, etc. remain here) ... */}
-
-               <div>
+              <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">Camp Name</label>
                 <input
                   type="text"
@@ -186,6 +205,7 @@ function CreateCamp() {
                 ></textarea>
               </div>
               
+              {/* --- UPDATED: Date Inputs --- */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
@@ -195,6 +215,7 @@ function CreateCamp() {
                     id="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
+                    min={minStartDate} // --- ADDED: Minimum date validation ---
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -207,7 +228,9 @@ function CreateCamp() {
                     id="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min={formData.startDate} // --- ADDED: End date must be after start date ---
+                    disabled={!formData.startDate} // --- ADDED: Disable until start date is set ---
+                    className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     required
                   />
                 </div>
@@ -293,7 +316,6 @@ function CreateCamp() {
                 />
               </div>
 
-              {/* --- UPDATED Submit Button --- */}
               <button
                 type="submit"
                 disabled={loading} // Disable button when loading

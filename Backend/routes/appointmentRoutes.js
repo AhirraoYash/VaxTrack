@@ -4,6 +4,7 @@ const {
     bookAppointment,
     getMyAppointments,
     updateAppointmentStatus,
+    deleteAppointment,
 } = require('../controllers/appointmentController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,5 +16,8 @@ router.get('/myappointments', protect, getMyAppointments);
 
 // Update an appointment's status (requires login, typically for vaccinators/admins)
 router.put('/:id/status', protect, updateAppointmentStatus);
+
+// Delete (cancel) an appointment (requires login)
+router.delete('/:id', protect, deleteAppointment);
 
 module.exports = router;

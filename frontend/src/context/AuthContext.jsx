@@ -2,6 +2,8 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../api/authService';
+// --- FIX 1: Import campService ---
+import campService from '../api/campService';
 
 // 1. Create the context
 const AuthContext = createContext(null);
@@ -49,6 +51,33 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout();
     setUser(null);
+    // --- FIX 2: Also clear staff login info ---
+    localStorage.removeItem('staffToken');
+    localStorage.removeItem('staffInfo');
+  };
+
+  // --- FIX 3: Add the staffLogin function ---
+  const staffLogin = async (loginData) => {
+    // 'loginData' is the { campAccessCode, staffEmail, staffPin } object
+    try {
+      // 1. Call the API service
+      const res = await campService.staffLogin(loginData);
+
+      // 2. Save data to localStorage
+      localStorage.setItem('staffToken', res.staffIdentifier);
+      localStorage.setItem('staffInfo', JSON.stringify(res));
+
+      // 3. (Optional) You could set the user state here if you want
+      // setUser({ role: 'staff', email: res.staffIdentifier, ...res });
+      
+      // 4. Return the data
+      return res;
+
+    } catch (err) {
+      // 5. If it fails, throw the error so the page can catch it
+      console.error("AuthContext staffLogin error:", err);
+      throw err;
+    }
   };
 
   // The value that will be available to all children components
@@ -60,6 +89,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    staffLogin, // --- FIX 4: Add staffLogin to the value ---
   };
 
   return (

@@ -19,6 +19,7 @@ import StaffLoginPage from '../pages/staffPages/StaffLoginPage';
 // ... import other pages like AdminDashboard, OrganizerDashboard etc.
 import MyBookingsPage from '../pages/MyBookingsPage';
 import ManageCampPage from '../pages/ManageCampPage';
+import StaffDashboard from '../pages/staffPages/StaffDashboardPage';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -30,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/camps/:id" element={<CampDetailsPage />} />
       <Route path="/staff-login" element={<StaffLoginPage />} />
       <Route path="/my-booking" element={<MyBookingsPage />} />
+      <Route path="/staff-dashboard" element={<StaffDashboard />} />
       
       {/* --- Protected Routes (Beneficiary) --- */}
       <Route
@@ -65,6 +67,8 @@ const AppRoutes = () => {
       <ManageCampPage />
     </ProtectedRoute>
   } />
+
+ 
       {/* Add more protected routes for Organizers, Vaccinators, and Admins here */}
       {/* Example for an Admin route */}
       {/*

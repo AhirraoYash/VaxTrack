@@ -78,10 +78,27 @@ const updateAppointmentStatus = async (req, res) => {
         res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };
+//delete appointment
+const deleteAppointment = async (req, res) => {
+    try {
+        const appointment = await Appointment.findById(req.params.id);
 
+        if (!appointment) {
+            return res.status(404).json({ message: 'Appointment not found' });
+        }
+
+        
+        await appointment.deleteOne();
+        res.json({ message: 'Appointment successfully cancelled' });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error: ' + error.message });
+    }
+};
 
 module.exports = {
     bookAppointment,
     getMyAppointments,
     updateAppointmentStatus,
+    deleteAppointment
 };
